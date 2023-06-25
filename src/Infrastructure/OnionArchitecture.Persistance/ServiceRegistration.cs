@@ -9,6 +9,7 @@ namespace OnionArchitecture.Persistance
         public static void AddPersistanceServices(this IServiceCollection services)
         {
             services.AddScoped<ITodoListRepository, TodoListRepository>();
+            services.AddScoped<ITodoItemRepository, TodoItemRepository>();
         }
     }
 }
