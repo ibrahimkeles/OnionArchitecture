@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using OnionArchitecture.Domain.Identity;
 using YourCoach.Application.Utils.Results;
 
-namespace OnionArchitecture.Application.Features.Commands.RegisterStudent
+namespace OnionArchitecture.Application.Features.Commands.User.RegisterUser
 {
     public class RegisterUserRequest : IRequest<Result>
     {
@@ -31,7 +31,7 @@ namespace OnionArchitecture.Application.Features.Commands.RegisterStudent
             AppUser user = new();
             userName = userName.ToLower();
             userName = userName.Replace(" ", ".");
-            user.UserName = userName;
+            user.UserName = userName + new Random().Next(1000, 10000);
             _mapper.Map(request, user);
             IdentityResult result = await _userManager.CreateAsync(user, request.Password);
             if (result.Succeeded)
