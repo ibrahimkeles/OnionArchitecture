@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 using OnionArchitecture.Application.Repositories;
 using OnionArchitecture.Domain.Entites;
 using YourCoach.Application.Utils.Results;
@@ -12,10 +13,11 @@ namespace OnionArchitecture.Application.Features.Commands.TodoLists.DeleteTodoLi
     public class DeleteTodoListHandler : IRequestHandler<DeleteTodoListRequest, Result>
     {
         private readonly ITodoListRepository _todoListRepository;
-
-        public DeleteTodoListHandler(ITodoListRepository todoListRepository)
+        private readonly IDistributedCache _cache;
+        public DeleteTodoListHandler(ITodoListRepository todoListRepository, IDistributedCache cache)
         {
             _todoListRepository = todoListRepository;
+            _cache = cache;
         }
 
         public async Task<Result> Handle(DeleteTodoListRequest request, CancellationToken cancellationToken)
@@ -24,6 +26,7 @@ namespace OnionArchitecture.Application.Features.Commands.TodoLists.DeleteTodoLi
             if (todoList is null) return new Result(false, "Beklenmedik bir hata ile karşılaşıldı silenecek bir liste bulunamadı!");
             _todoListRepository.PassiveDelete(todoList);
             await _todoListRepository.SaveAsync();
+            await _cache.RemoveAsync($"todo_list{todoList.User}");
             return new Result(true, "Silme işlemi başarılı");
         }
     }

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 using OnionArchitecture.Application.Repositories;
 using OnionArchitecture.Domain.Entites;
 using System.Text.Json.Serialization;
@@ -18,10 +19,12 @@ namespace OnionArchitecture.Application.Features.Commands.TodoLists.CreateTodoLi
     {
         private readonly ITodoListRepository _todoListRepository;
         private readonly IMapper _mapper;
-        public CreateTodoListHandler(ITodoListRepository todoListRepository, IMapper mapper)
+        private readonly IDistributedCache _cache;
+        public CreateTodoListHandler(ITodoListRepository todoListRepository, IMapper mapper, IDistributedCache cache)
         {
             _todoListRepository = todoListRepository;
             _mapper = mapper;
+            _cache = cache;
         }
 
         public async Task<Result> Handle(CreateTodoListRequest request, CancellationToken cancellationToken)
@@ -33,6 +36,7 @@ namespace OnionArchitecture.Application.Features.Commands.TodoLists.CreateTodoLi
             _mapper.Map(request, todoList);
             await _todoListRepository.AddAsync(todoList);
             await _todoListRepository.SaveAsync();
+            await _cache.RemoveAsync($"todo_list{request.UserId}");
             return new Result(true, $"{todoList.Title} adlı liste başarılı bir şekilde oluşturulmuştur!");
         }
     }

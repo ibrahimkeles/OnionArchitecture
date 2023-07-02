@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FluentValidation;
 using MediatR;
+using Microsoft.Extensions.Caching.Distributed;
 using OnionArchitecture.Application.Repositories;
 using OnionArchitecture.Domain.Entites;
 using YourCoach.Application.Utils.Results;
@@ -16,11 +17,12 @@ namespace OnionArchitecture.Application.Features.Commands.TodoItems.CreateTodoIt
     {
         private readonly ITodoItemRepository _todoItemRepository;
         private readonly IMapper _mapper;
-
-        public CreateTodoItemHandler(ITodoItemRepository todoItemRepository, IMapper mapper)
+        private readonly IDistributedCache _cache;
+        public CreateTodoItemHandler(ITodoItemRepository todoItemRepository, IMapper mapper, IDistributedCache cache)
         {
             _todoItemRepository = todoItemRepository;
             _mapper = mapper;
+            _cache = cache;
         }
 
         public async Task<Result> Handle(CreateTodoItemRequest request, CancellationToken cancellationToken)
@@ -29,6 +31,7 @@ namespace OnionArchitecture.Application.Features.Commands.TodoItems.CreateTodoIt
             _mapper.Map(request, todoItem);
             await _todoItemRepository.AddAsync(todoItem);
             await _todoItemRepository.SaveAsync();
+            await _cache.RemoveAsync($"todo_item{request.TodoListId}");
             return new Result(true, "Ekleme işlemi başarılı");
         }
     }

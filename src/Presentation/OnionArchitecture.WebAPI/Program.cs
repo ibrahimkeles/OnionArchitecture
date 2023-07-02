@@ -75,6 +75,10 @@ namespace OnionArchitecture.WebAPI
                 .ConfigureApiBehaviorOptions(opt => { opt.SuppressModelStateInvalidFilter = true; });
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddStackExchangeRedisCache(opt =>
+            {
+                opt.Configuration = "localhost:1453";
+            });
             var app = builder.Build();
             if (app.Environment.IsDevelopment())
             {
